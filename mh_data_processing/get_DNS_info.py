@@ -4,7 +4,7 @@ Created on 2020/7/17 13:54
 
 @author : dengcongyi0701@163.com
 
-Description:
+Description: to collect url information in DNS data
 
 """
 

@@ -91,9 +91,9 @@ def get_test_data():
 
 def pyod_predict(clf, name):
     """
-    K最近邻算法
-    :return:    sus_x_train 训练集中可疑访问得分
-                sus_x_test 测试集中可疑访问得分
+    :param clf:     分类器
+    :param name:    算法名称
+    :return:    危险IP top10， 对应最可疑访问的p-value
     """
     x_train, df_train = get_train_data()
     x_test, df_test = get_test_data()
@@ -149,6 +149,7 @@ def pyod_predict(clf, name):
         score_list = score_list['score'][:].tolist()
 
         # ###################
+        # top10 IP 所有访问p-value均值
         # pv = 0
         # for sc in score_list:
         #     pv += cal_pValue(sus_x_train_score, sc)
@@ -209,6 +210,4 @@ if __name__ == "__main__":
     ipl, pvl = pyod_predict(SO_GAAL_clf, "SO_GAAL")
     print(ipl)
     print(pvl)
-    #
-    # p_value = cal_pValue(train_sus, test_sus, train_safe, test_safe)
-    # print(p_value)
+
