@@ -16,6 +16,7 @@ import numpy as np
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
+from keras.models import load_model
 
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -133,8 +134,8 @@ class SO_GAAL(BaseDetector):
             num_batches = int(data_size / batch_size)
 
             for index in range(num_batches):
-                print('\nTesting for epoch {} index {}:'.format(epoch + 1,
-                                                                index + 1))
+                # print('\nTesting for epoch {} index {}:'.format(epoch + 1,
+                #                                                 index + 1))
 
                 # Generate noise
                 noise_size = batch_size
@@ -174,6 +175,12 @@ class SO_GAAL(BaseDetector):
         self.decision_scores_ = self.discriminator.predict(X)
         self._process_decision_scores()
         return self
+
+    def save(self, add):
+        self.combine_model.save(add)
+
+    def load(self, add):
+        self.combine_model = load_model(add)
 
     def decision_function(self, X):
         """Predict raw anomaly score of X using the fitted detector.

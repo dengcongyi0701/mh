@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+   <head>
+       <meta charset="utf-8">
+   </head>
+   <body style="height: 100%; margin: 0">
+       <div id="container" style="height: 100%"></div>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+       <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+var dataMap = {};
+
+
+
+
+option = {
+    baseOption: {
+        timeline: {
+            axisType: 'category',
+			position: 'left',
+            autoPlay: true,
+            data: [
+                '01/19','01/20','01/21','01/22','01/23','01/24','01/25','01/26','01/27','01/28','01/29','01/30','01/31','02/01','02/02','02/03','02/04','02/05','02/06','02/07','02/08','02/09','02/10','02/11','02/12','02/13','02/14','02/15','02/16','02/17'
+            ],
+
+        },
+        title: {
+            subtext: '数据来自华东空管局'
+        },
+        tooltip: {
+        },
+        legend: {
+            left: 'right',
+            data: ['私有IP', '公有IP'],
+        },
+        calculable : true,
+        
+        series: [
+            {
+                name: 'IP地址',
+                type: 'pie',
+                z: 100,
+				label:{            //饼图图形上的文本标签
+                            normal:{
+                                show:true,
+                                //position:'inner', //标签的位置
+                                textStyle : {
+                                    fontWeight : 300 ,
+                                    fontSize : 25    //文字的字体大小
+                                },
+                                formatter:'{d}%'
+
+                                
+                            }
+                        },
+            }
+        ]
+    },
+    options: [
+        {
+            title: {text: '2020/01/19 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 0},
+                    {name: '公有IP', value: 2341},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/20 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 25},
+                    {name: '公有IP', value: 3095},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/21 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 58},
+                    {name: '公有IP', value: 3246},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/22 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 59},
+                    {name: '公有IP', value: 3308},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/23 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 59},
+                    {name: '公有IP', value: 3326},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/24 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2331},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/25 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2400},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/26 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2459},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/27 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2505},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/28 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2562},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/29 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2594},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/30 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 24},
+                    {name: '公有IP', value: 2338},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/01/31 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 24},
+                    {name: '公有IP', value: 2427},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/01 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 25},
+                    {name: '公有IP', value: 2484},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/02 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2539},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/03 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2806},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/04 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2593},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/05 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2766},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/06 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2875},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/07 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2930},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/08 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2952},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/09 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2381},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/10 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 28},
+                    {name: '公有IP', value: 2703},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/11 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 28},
+                    {name: '公有IP', value: 2851},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/12 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2607},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/13 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2813},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/14 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2594},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/15 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 27},
+                    {name: '公有IP', value: 2661},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/16 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 26},
+                    {name: '公有IP', value: 2379},
+                ]}
+            ]
+        },
+		{
+            title: {text: '2020/02/17 IP分布'},
+            series: [
+                {data: [
+                    {name: '私有IP', value: 28},
+                    {name: '公有IP', value: 2639},
+                ]}
+            ]
+        },
+    ]
+};;
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+       </script>
+   </body>
+</html>

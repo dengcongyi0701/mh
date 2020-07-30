@@ -14,14 +14,13 @@ from sklearn.preprocessing import normalize
 from sklearn import decomposition
 from pyod.models.knn import KNN
 from pyod.models.pca import PCA
-from pyod.models.ocsvm import OCSVM
 from pyod.models.vae import VAE
 from pyod.models.lof import LOF
-from pyod.models.loda import LODA
-from pyod.models.hbos import HBOS
 from pyod.models.iforest import IForest
 from pyod.models.feature_bagging import FeatureBagging
 from pyod.models.so_gaal import SO_GAAL
+import pickle
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -29,19 +28,20 @@ plt.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
 plt.rcParams['axes.unicode_minus'] = False  # 解决保存图像是负号'-'显示为方块的问题
 
 
-begin = "2020-02-15"
-end = "2020-02-15"
-test_date = "2020-02-16"
+begin = "2020-01-19"
+end = "2020-01-19"
+test_date = "2020-01-19"
 
 KNN_clf = KNN(contamination=0.05)
 PCA_clf = PCA(contamination=0.05, n_components=0.9)
 VAE_clf = VAE(contamination=0.05, epochs=50, gamma=0.8, capacity=0.2, encoder_neurons=[9, 4], decoder_neurons=[4, 9])
 LOF_clf = LOF(contamination=0.05)
-LODA_clf = LODA(contamination=0.05)
-HBOS_clf = HBOS(contamination=0.05)
 IForest_clf = IForest(contamination=0.05)
 FeatureBagging_clf = FeatureBagging(contamination=0.05, check_estimator=False)
 SO_GAAL_clf = SO_GAAL(contamination=0.05, stop_epochs=20)
+K_models = ['SO_GAAL', 'VAE']
+S_models = ['KNN', 'PCA', 'LOF', 'IForest']
+
 
 def get_train_data():
     """
@@ -89,19 +89,47 @@ def get_test_data():
     return x_test, df
 
 
-def pyod_predict(clf, name):
+def pyod_train(clf, name):
     """
     :param clf:     分类器
     :param name:    算法名称
-    :return:    危险IP top10， 对应最可疑访问的p-value
+    :return:
+    """
+    x_train, df_train = get_train_data()
+    # x_test, df_test = get_test_data()
+    # df_train = df_train.reset_index()
+    # df_test = df_test.reset_index()
+
+    print("————————————{} training————————————".format(name))
+    clf.fit(x_train)
+
+    if name in S_models:
+        with open('M:\mh_data\model\{}.pkl'.format(name), 'wb') as f:
+            pickle.dump(clf, f)
+    # elif name in K_models:
+    #     clf.save('M:\mh_data\model\{}.h5'.format(name))
+    else:
+        return clf
+
+
+
+def pyod_predict(clf, name):
+    """
+    :param name: 算法名称
+    :return:  危险IP top10， 对应最可疑访问的p-value
     """
     x_train, df_train = get_train_data()
     x_test, df_test = get_test_data()
     df_train = df_train.reset_index()
     df_test = df_test.reset_index()
 
-    print("————————————{} training————————————".format(name))
-    clf.fit(x_train)
+    if name in S_models:
+        with open('M:\mh_data\model\{}.pkl'.format(name), 'rb') as f:
+            clf = pickle.load(f)
+    # elif name in K_models:
+    #     clf.load('M:\mh_data\model\{}.h5'.format(name))
+    else:
+        clf = pyod_train(clf, name)
 
     y_train_pred = clf.labels_
     y_train_scores = clf.decision_scores_
@@ -150,7 +178,7 @@ def pyod_predict(clf, name):
 
         # ###################
         # top10 IP 所有访问p-value均值
-        # pv = 0
+        # pv = 0pick
         # for sc in score_list:
         #     pv += cal_pValue(sus_x_train_score, sc)
         # pv /= len(score_list)
@@ -162,32 +190,6 @@ def pyod_predict(clf, name):
         pv_list.append(pv)
 
     return ip_list, pv_list
-
-
-
-    # # 数据可视化
-    #
-    # # 降维
-    # pca = decomposition.PCA(n_components=3)
-    # pca_test = pd.DataFrame(pca.fit_transform(x_test))
-    # pca_test.insert(0, 'label', y_test_pred)
-    # pca_test.insert(0, 'IP', df_test.pop('src_ip'))
-    #
-    # # 抽取百分之一的数据
-    # pca_sample = pca_test.sample(frac=0.01, axis=0)
-    # safe = pca_sample[pca_sample.label == 0]
-    # dangerous = pca_sample[pca_sample.label > 0]
-    # # safe.to_csv("{}_safe.csv".format(name), index=None)
-    # # dangerous.to_csv("{}_dangerous.csv".format(name), index=None)
-    # print("\nthe number of safe points:", safe.shape[0])
-    # print("the number of dangerous points:", dangerous.shape[0])
-    #
-    # # 画图
-    # ax = plt.subplot(111, projection='3d')
-    # ax.scatter(safe[0][:], safe[1][:], safe[2][:], c='b', label='安全访问记录')
-    # ax.scatter(dangerous[0][:], dangerous[1][:], dangerous[2][:], c='r', label='可疑访问记录')
-    #
-    # plt.show()
 
 
 def cal_pValue(sus_train, sample_score):
@@ -207,7 +209,8 @@ def cal_pValue(sus_train, sample_score):
 
 if __name__ == "__main__":
 
+    # pyod_train(SO_GAAL_clf, "SO_GAAL")
     ipl, pvl = pyod_predict(SO_GAAL_clf, "SO_GAAL")
-    print(ipl)
-    print(pvl)
+    # print(ipl)
+    # print(pvl)
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+   <head>
+       <meta charset="utf-8">
+   </head>
+   <body style="height: 100%; margin: 0">
+       <div id="container" style="height: 100%"></div>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+       <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+option = {
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+            type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    legend: {
+        data: ['公有IP发起访问',  '公有IP接受访问', '私有IP发起访问', '私有IP接受访问', '访问总数']
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis: [
+        {
+            type: 'category',
+            data: ['2020/01/19', '\n2020/01/20', '2020/01/21', '\n2020/01/22', '2020/01/23', '\n2020/01/24', '2020/01/25', '\n2020/01/26',
+			'2020/01/27', '\n2020/01/28', '2020/01/29', '\n2020/01/30', '2020/01/31', '\n2020/02/01', '2020/02/02', '\n2020/02/03', '2020/02/04',
+			'\n2020/02/05', '2020/02/06', '\n2020/02/07', '2020/02/08', '\n2020/02/09', '2020/02/10', '\n2020/02/11', '2020/02/12', '\n2020/02/13',
+			'2020/02/14', '\n2020/02/15', '2020/02/16', '\n2020/02/17']
+        }
+    ],
+    yAxis: [
+        {
+            type: 'value'
+        }
+    ],
+    series: [
+		{
+            name: '私有IP发起访问',
+            type: 'bar',
+			stack: '发起访问',
+            data: [450000, 3916248, 7264388, 10530603, 12832590, 1719794, 3418963, 5085140, 6711364, 8374037, 10111695, 1711978, 3396892, 5072617, 6777211, 9055810, 2095516, 4145978, 6265295, 8399253, 10131489, 1720847, 3986955, 6217461, 2240148, 4491863, 2225209, 4049835, 1831926, 3027072]
+        },
+		{
+            name: '公有IP发起访问',
+            type: 'bar',
+			stack: '发起访问',
+            data: [0, 0, 3, 4, 4, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 3, 4, 5, 6, 1, 2, 2, 1, 1, 2, 4, 1, 3]
+        },
+		{
+            name: '私有IP接受访问',
+            type: 'bar',
+            stack: '接受访问',
+            data: [450000, 3909014, 7249774, 10508736, 12803406, 1712436, 3404340, 5063265, 6682304, 8337742, 10068181, 1704794, 3382505, 5051021, 6748339, 9019477, 2086933, 4129194, 6240970, 8366366, 10089967, 1712809, 3971527, 6194617, 2232705, 4476924, 2217679, 4034779, 1824393, 3015499]
+        },
+        {
+            name: '公有IP接受访问',
+            type: 'bar',
+            stack: '接受访问',
+            data: [0, 7234, 14617, 21871, 29188, 7359, 14624, 21876, 29061, 36296, 43515, 7184, 14387, 21596, 28872, 36334, 8584, 16787, 24329, 32892, 41528, 8039, 15430, 22846, 7444, 14940, 7532, 15060, 7534, 11576]
+        }
+    ]
+};
+;
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+       </script>
+   </body>
+</html>

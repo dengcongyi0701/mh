@@ -28,6 +28,7 @@ from keras.regularizers import l2
 from keras.losses import mse, binary_crossentropy
 from keras.utils import plot_model
 from keras import backend as K
+from keras.models import load_model
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array
@@ -348,6 +349,7 @@ class VAE(BaseDetector):
                                                                 pred_scores)
         self._process_decision_scores()
         return self
+
 
     def decision_function(self, X):
         """Predict raw anomaly score of X using the fitted detector.

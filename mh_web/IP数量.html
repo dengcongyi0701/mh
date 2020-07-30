@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+   <head>
+       <meta charset="utf-8">
+   </head>
+   <body style="height: 100%; margin: 0">
+       <div id="container" style="height: 100%"></div>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+       <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+var dataMap = {};
+function dataFormatter(obj) {
+    var pList = ['2020/01/19','2020/01/20','2020/01/21','2020/01/22','2020/01/23','2020/01/24','2020/01/25','2020/01/26','2020/01/27','2020/01/28','2020/01/29','2020/01/30','2020/01/31','2020/02/01','2020/02/02','2020/02/03','2020/02/04','2020/02/05','2020/02/06','2020/02/07','2020/02/08','2020/02/09','2020/02/10','2020/02/11','2020/02/12','2020/02/13','2020/02/14','2020/02/15','2020/02/16','2020/02/17'];
+    var temp;
+    for (var year = 2002; year < 2003; year++) {
+        var max = 0;
+        var sum = 0;
+        temp = obj[year];
+        for (var i = 0, l = temp.length; i < l; i++) {
+            max = Math.max(max, temp[i]);
+            sum += temp[i];
+            obj[year][i] = {
+                name: pList[i],
+                value: temp[i]
+            };
+        }
+        obj[year + 'max'] = Math.floor(max / 100) * 100;
+        obj[year + 'sum'] = sum;
+    }
+    return obj;
+}
+
+dataMap.dataGDP = dataFormatter({
+    //max : 60000,
+    2002:[4315,2150.76,6018.28,2324.8,1940.94,5458.22,2348.54,3637.2,5741.03,10606.85,8003.67,3519.72,4467.55,2450.48,10275.5,6035.48,4212.82,4151.54,13502.42,2523.73,642.73,2232.86,4725.01,1243.43,2312.82,162.04,2253.39,1232.03,340.65,377.16,1612.6]
+});
+
+dataMap.dataPI = dataFormatter({
+    //max : 4000,
+    2002:[82.44,84.21,956.84,197.8,374.69,590.2,446.17,474.2,79.68,1110.44,685.2,783.66,664.78,535.98,1390,1288.36,707,847.25,1015.08,601.99,222.89,317.87,1047.95,281.1,463.44,39.75,282.21,215.51,47.31,52.95,305]
+});
+
+dataMap.dataSI = dataFormatter({
+    //max : 26600,
+    2002:[1249.99,1069.08,2911.69,1134.31,754.78,2609.85,943.49,1843.6,2622.45,5604.49,4090.48,1337.04,2036.97,941.77,5184.98,2768.75,1709.89,1523.5,6143.4,846.89,148.88,958.87,1733.38,481.96,934.88,32.72,1007.56,501.69,144.51,153.06,603.15]
+});
+
+dataMap.dataTI = dataFormatter({
+    //max : 25000,
+    2002:[2982.57,997.47,2149.75,992.69,811.47,2258.17,958.88,1319.4,3038.9,3891.92,3227.99,1399.02,1765.8,972.73,3700.52,1978.37,1795.93,1780.79,6343.94,1074.85,270.96,956.12,1943.68,480.37,914.5,89.56,963.62,514.83,148.83,171.14,704.5]
+});
+
+dataMap.dataEstate = dataFormatter({
+    //max : 3600,
+    2002:[298.02,73.04,140.89,65.83,51.48,130.94,76.11,118.7,384.86,371.09,360.63,139.18,188.09,125.27,371.13,199.31,145.17,165.29,808.16,82.83,21.45,90.48,210.82,53.49,95.68,3.42,77.68,41.52,9.74,13.46,43.04]
+});
+
+dataMap.dataFinancial = dataFormatter({
+    //max : 3200,
+    2002:[561.91,76.86,179.6,124.1,48.39,137.18,75.45,31.6,485.25,368.86,347.53,81.85,138.28,76.51,310.07,158.77,96.95,92.43,454.65,35.86,10.08,134.52,183.13,41.45,102.39,2.81,67.3,42.08,16.75,21.45,52.18]
+});
+
+
+option = {
+    baseOption: {
+        title: {
+			text: '2020年度1月-2月IP访问情况统计',
+            subtext: '数据来自华东空管局'
+        },
+        legend: {
+            left: 'right',
+            data: ['发起访问的私有IP', '发起访问的公有IP', '接受访问的私有IP', '接受访问的公有IP'],
+            selected: {
+                'GDP': false, '金融': false, '房地产': false
+            }
+        },
+        calculable : true,
+        grid: {
+            top: 80,
+            bottom: 100,
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                    label: {
+                        show: true,
+                        formatter: function (params) {
+                            return params.value.replace('\n', '');
+                        }
+                    }
+                }
+            }
+        },
+        xAxis: [
+            {
+                'type':'category',
+                'axisLabel':{'interval':0},
+                'data':[
+                    '2020/01/19','\n2020/01/20','2020/01/21','\n2020/01/22','2020/01/23','\n2020/01/24','2020/01/25','\n2020/01/26',
+                    '2020/01/27','\n2020/01/28','2020/01/29','\n2020/01/30','2020/01/31','\n2020/02/01','2020/02/02','\n2020/02/03',
+                    '2020/02/04','\n2020/02/05','2020/02/06','\n2020/02/07','2020/02/08','\n2020/02/09','2020/02/10','\n2020/02/11',
+                    '2020/02/12','\n2020/02/13','2020/02/14','\n2020/02/15','2020/02/16','\n2020/02/17'
+                ],
+                splitLine: {show: false}
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                //name: 'GDP（亿元）'
+            }
+        ],
+        series: [
+		    {
+				name: '发起访问的私有IP', 
+				type: 'bar',
+				stack: '发起访问的IP',
+				data: [920, 1791, 1998, 2098, 2142, 769, 848, 941, 1018, 1068, 1110, 815, 907, 967, 1047, 1392, 1115, 1284, 1414, 1475, 1498, 874, 1306, 1482, 1149, 1357, 1119, 1182, 917, 1266],
+				itemStyle: {
+                   normal: {
+                       label: {
+                           show: true,		//开启显示
+                           position: 'top',	//在上方显示
+						   distance: 5,
+					
+                       }
+                   }
+               }
+			},
+            {
+				name: '发起访问的公有IP', 
+				type: 'bar',
+				stack: '发起访问的IP',
+				data: [0, 0, 3, 4, 4, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 3],
+				itemStyle: {
+                   normal: {
+                       label: {
+                           show: true,		//开启显示
+                           position: 'top',	//在上方显示
+						   distance: 25,
+
+					
+                       }
+                   }
+               }
+			},
+
+            {
+				name: '接受访问的私有IP', 
+				type: 'bar',
+				stack: '接受访问的IP',
+				data: [2273, 2966, 3112, 3158, 3173, 2278, 2351, 2403, 2443, 2492, 2522, 2296, 2381, 2429, 2478, 2715, 2522, 2680, 2777, 2821, 2838, 2330, 2627, 2765, 2519, 2706, 2508, 2569, 2322, 2546],
+				itemStyle: {
+                   normal: {
+                       label: {
+                           show: true,		//开启显示
+                           position: 'top',	//在上方显示
+						   distance: 18,
+
+					
+                       }
+                   }
+               }
+			},
+			{
+				name: '接受访问的公有IP', 
+				type: 'bar',
+				stack: '接受访问的IP',
+				data: [0, 25, 55, 55, 55, 25, 26, 26, 26, 26, 26, 24, 24, 25, 26, 26, 25, 25, 25, 25, 26, 25, 26, 26, 25, 25, 25, 26, 25, 25],
+				itemStyle: {
+                   normal: {
+                       label: {
+                           show: true,		//开启显示
+                           position: 'top',	//在上方显示
+						   distance: 30,
+
+					
+                       }
+                   }
+               }
+			},
+            
+        ]
+    },
+    
+};;
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+       </script>
+   </body>
+</html>

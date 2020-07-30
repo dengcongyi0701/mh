@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+   <head>
+       <meta charset="utf-8">
+   </head>
+   <body style="height: 100%; margin: 0">
+       <div id="container" style="height: 100%"></div>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=xfhhaTThl11qYVrqLZii6w8qE5ggnhrY&__ec_v__=20190126"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+       <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+var dataMap = {};
+
+option = {
+    baseOption: {
+        title: {
+            left:'3%',
+            textStyle:{
+			   fontSize:35,
+			    align:'center',
+            },
+            subtext: '来自疑似被控主机：10.13.78.146',
+            subtextStyle:{
+			   fontSize:20,
+            },
+        },
+        timeline: {
+            axisType: 'category',
+            position: 'left',
+            autoPlay: true,
+            symbolSize:7,
+            checkpointStyle:{
+                color: 'GoldEnrod',
+                //borderColor: 'GoldEnrod',
+            },
+            label:{
+                textStyle:{fontSize:15},
+
+            },
+            data: [
+                '00:00~00:59',
+                {
+                    value: '01:00~01:59',
+                    tooltip:{
+                        formatter:'{b}时间段内无访问',
+                    },
+                    symbol: 'triangle',
+                    symbolSize: 15,
+                },
+                {
+                    value: '02:00~02:59',
+                    tooltip:{
+                        formatter:'{b}时间段内无访问',
+                    },
+                    symbol: 'triangle',
+                    symbolSize: 15,
+                },'03:00~03:59','04:00~04:59',
+                {
+                    value: '05:00~05:59',
+                    tooltip:{
+                        formatter:'{b}时间段内无访问',
+                    },
+                    symbol: 'triangle',
+                    symbolSize: 15,
+                },
+                {
+                    value: '06:00~06:59',
+                    tooltip:{
+                        formatter:'{b}时间段内无访问',
+                    },
+                    symbol: 'triangle',
+                    symbolSize: 15,
+                },
+                '07:00~07:59','08:00~08:59',
+                {
+                    value: '09:00~09:59',
+                    tooltip:{
+                        formatter:'{b}时间段内无访问',
+                    },
+                    symbol: 'triangle',
+                    symbolSize: 15,
+                },
+            ],
+        },
+
+        legend: {
+            textStyle:{
+                fontSize: 20,
+            },
+            left: 'right',
+            data: ['访问次数'],
+            color: 'Teal',
+        },
+        tooltip: {
+            textStyle:{fontSize:30},
+        },
+        calculable : true,
+        grid: {
+            left: 70,
+            right : 70,
+            top: 100,
+            bottom: 100,
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                    label: {
+                        show: true,
+                        formatter: function (params) {
+                            return params.value.replace('\n', '');
+                        }
+                    }
+                }
+            }
+        },
+        xAxis: [
+            {
+                type: 'category',
+                axisLabel: {
+                    show:true,
+                    rotate: 30,
+                    textStyle: {fontSize: 12,}
+                    },
+                data:[
+                    'amkmmiom.org', 'gkgwjjy.cc', 'gwdjpigz.net', 'gztjdujwjkg.org', 'iexbtzgh.cc', 'ifoesoid.cc',
+                    'igszfv.net', 'iopbc.info', 'jyncpjhox.com', 'kgtofngvfn.ws', 'kjlrweee.info', 'kxwpffor.info',
+                    'kzofbsp.org', 'levylc.cc', 'mbcvilt.cc', 'mcwvlye.ws', 'mfagvjac.biz', 'nfnhqd.cn',
+                    'nlhjjwhba.info', 'nlzqdpis.com', 'nmnvtfyj.com', 'nwwspi.info', 'oyfamwfe.net', 'ozrud.com',
+                    'pghowu.net', 'pwvnrtipqti.com', 'rgxgdca.biz', 'rlrmm.ws', 'rltxdu.cn', 'rtwfjgsc.com',
+                    'rwdlpiptmp.cc', 'skhpbjw.biz', 'tyivo.info', 'umbgivkmek.ws', 'upinxq.org', 'vfwie.info',
+                    'xrxklhfr.info', 'xtrfo.net', 'yqifuucez.org', 'zwstofxs.info'
+                ],
+                splitLine: {show: false}
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                name: '（次）',
+                nameTextStyle: {	    //数值样式
+                   fontSize:15,
+                   color: 'gray',
+                 },
+                axisLabel: {
+                    show:true,
+                    textStyle: {fontSize: 15,}
+                },
+
+            }
+        ],
+        series: [
+            {
+                name: '访问次数',
+                type: 'bar',
+                color: 'Teal',
+                itemStyle: {
+                       normal: {
+                           label: {
+                               show: true,		//开启显示
+                               position: 'top',	//在上方显示
+                               textStyle: {	    //数值样式
+                                   fontSize:15,
+                                   color: 'gray',
+                               },
+                           }
+                       }
+                   }
+            },
+        ]
+    },
+    options: [
+        {
+            title: {text: '00:00~00:59 域名访问统计',},
+            series: [
+                {
+                    data: [
+                        0, 11, 0, 0, 11, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 11, 0, 0, 0, 0, 14, 11, 0, 0, 0, 0, 10, 0,
+                        11, 14, 5, 0, 11, 10, 0, 0, 0, 11, 0, 0
+                    ],
+                },
+
+            ]
+        },
+        {
+            title: {text: '01:00~01:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0
+                    ]},
+            ]
+        },
+        {
+            title: {text: '02:00~02:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0
+                    ]},
+            ]
+        },
+        {
+            title: {text: '03:00~03:59 域名访问统计'},
+            series: [
+                {data: [
+                    14, 11, 0, 0, 0, 0, 0, 0, 0, 14, 14, 0, 14, 11, 0, 0, 0, 0, 11, 0, 14, 14, 0, 14, 0, 0, 11, 14, 11,
+                        14, 0, 14, 0, 0, 0, 0, 0, 0, 14, 0]},
+            ]
+        },
+        {
+            title: {text: '04:00~04:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 0, 14, 14, 14, 14, 11, 14, 11, 0, 0, 14, 0, 0, 14, 11, 14, 14, 0, 11, 0, 0, 14, 0, 14, 14, 0, 0,
+                        0, 0, 11, 0, 11, 14, 14, 14, 14, 14, 0, 14]},
+            ]
+        },
+        {
+            title: {text: '05:00~05:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0
+                    ]},
+            ]
+        },
+        {
+            title: {text: '06:00~06:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0
+                    ]},
+            ]
+        },
+        {
+            title: {text: '07:00~07:59 域名访问统计'},
+            series: [
+                {data: [
+                    0, 11, 0, 14, 14, 14, 14, 0, 0, 0, 0, 14, 11, 0, 0, 0, 11, 11, 14, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0,
+                        0, 0, 0, 0, 0, 14, 0, 0, 14, 14, 14]},
+            ]
+        },
+        {
+            title: {text: '08:00~08:59 域名访问统计'},
+            series: [
+                {data: [
+                    14, 0, 14, 0, 0, 0, 0, 14, 14, 11, 11, 0, 0, 14, 11, 14, 0, 0, 0, 14, 0, 11, 14, 14, 14, 14, 2, 14,
+                        11, 14, 14, 14, 11, 11, 0, 14, 14, 0, 0, 0
+                    ]},
+            ]
+        },
+        {
+            title: {text: '09:00~23:59 域名访问统计'},
+            series: [
+                {data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+            ]
+        },
+
+    ]
+};;
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+    window.onresize = myChart.resize;
+}
+       </script>
+   </body>
+</html>
