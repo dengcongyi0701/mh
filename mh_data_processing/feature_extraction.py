@@ -96,7 +96,7 @@ def feature_extraction(seconds):
     :param seconds:
     :return:
     """
-    begin = "2020-02-13"
+    begin = "2020-02-16"
     end = "2020-02-16"
     col = ['src_IP', 'num_of_dstIP', 'ratio_acc_dstIP', 'ratio_acc_dstPORT', 'std_dstPORT', 'mean_resp_flow',
            'std_resp_flow', 'zero_resp_flow', 'mean_req_flow', 'std_req_flow', 'time']
@@ -167,6 +167,6 @@ def feature_extraction(seconds):
 if __name__ == "__main__":
     # get_info()
     # get_info_more()
-    feature_extraction(60)
+    feature_extraction(10)
 
 

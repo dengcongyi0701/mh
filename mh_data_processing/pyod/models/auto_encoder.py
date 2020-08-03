@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import pickle
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.regularizers import l2
@@ -15,6 +16,7 @@ from keras.losses import mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+from keras.models import load_model
 
 from ..utils.utility import check_parameter
 from ..utils.stat_models import pairwise_distances_no_broadcast
@@ -254,6 +256,21 @@ class AutoEncoder(BaseDetector):
                                                                 pred_scores)
         self._process_decision_scores()
         return self
+    def save(self, add):
+        self.model_.save("{}.h5".format(add))
+        pickle.dump(self.scaler_, open('{}.pkl'.format(add), 'wb'))
+        his = np.array(self.history_['loss'])
+        np.savez("{}_info.npz".format(add), label=self.labels_, threshold=self.threshold_, score=self.decision_scores_,
+                 history=his)
+
+    def read(self, add):
+        self.model_ = load_model("{}.h5".format(add))
+        info = np.load("{}_info.npz".format(add))
+        self.labels_ = info['label']
+        self.threshold_ = info['threshold']
+        self.decision_scores_ = info['score']
+        self.history_ = {'loss':info['history'].tolist()}
+        self.scaler_ = pickle.load(open('{}.pkl'.format(add), 'rb'))
 
     def decision_function(self, X):
         """Predict raw anomaly score of X using the fitted detector.
