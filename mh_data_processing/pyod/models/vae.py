@@ -38,7 +38,7 @@ from ..utils.utility import check_parameter
 from ..utils.stat_models import pairwise_distances_no_broadcast
 
 from .base import BaseDetector
-
+import pickle
 
 class VAE(BaseDetector):
     """ Variational auto encoder
@@ -350,6 +350,24 @@ class VAE(BaseDetector):
         self._process_decision_scores()
         return self
 
+    def save(self, add):
+        self.model_.save_weights("{}.h5".format(add))
+        pickle.dump(self.scaler_, open('{}.pkl'.format(add), 'wb'))
+        his = np.array(self.history_['loss'])
+        np.savez("{}_info.npz".format(add), label=self.labels_, threshold=self.threshold_, score=self.decision_scores_,
+                 history=his)
+
+    def read(self, add, n_sam, n_fea):
+        self.n_samples_ = n_sam
+        self.n_features_ = n_fea
+        self.model_ = self._build_model()
+        self.model_.load_weights("{}.h5".format(add))
+        info = np.load("{}_info.npz".format(add))
+        self.labels_ = info['label']
+        self.threshold_ = info['threshold']
+        self.decision_scores_ = info['score']
+        self.history_ = {'loss': info['history'].tolist()}
+        self.scaler_ = pickle.load(open('{}.pkl'.format(add), 'rb'))
 
     def decision_function(self, X):
         """Predict raw anomaly score of X using the fitted detector.

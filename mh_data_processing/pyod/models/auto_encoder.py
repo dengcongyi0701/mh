@@ -263,13 +263,13 @@ class AutoEncoder(BaseDetector):
         np.savez("{}_info.npz".format(add), label=self.labels_, threshold=self.threshold_, score=self.decision_scores_,
                  history=his)
 
-    def read(self, add):
+    def read(self, add, n_sam, n_fea):
         self.model_ = load_model("{}.h5".format(add))
         info = np.load("{}_info.npz".format(add))
         self.labels_ = info['label']
         self.threshold_ = info['threshold']
         self.decision_scores_ = info['score']
-        self.history_ = {'loss':info['history'].tolist()}
+        self.history_ = {'loss': info['history'].tolist()}
         self.scaler_ = pickle.load(open('{}.pkl'.format(add), 'rb'))
 
     def decision_function(self, X):

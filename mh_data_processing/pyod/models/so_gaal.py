@@ -12,7 +12,7 @@ from __future__ import print_function
 from collections import defaultdict
 
 import numpy as np
-
+import pickle
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
@@ -177,10 +177,16 @@ class SO_GAAL(BaseDetector):
         return self
 
     def save(self, add):
-        self.combine_model.save(add)
+        self.discriminator.save("{}.h5".format(add))
+        np.savez("{}_info.npz".format(add), label=self.labels_, threshold=self.threshold_, score=self.decision_scores_)
 
-    def load(self, add):
-        self.combine_model = load_model(add)
+    def read(self, add, n_sam, n_fea):
+        self.discriminator = load_model("{}.h5".format(add))
+        info = np.load("{}_info.npz".format(add))
+        self.labels_ = info['label']
+        self.threshold_ = info['threshold']
+        self.decision_scores_ = info['score']
+
 
     def decision_function(self, X):
         """Predict raw anomaly score of X using the fitted detector.

@@ -26,6 +26,8 @@ from pyod.models.cblof import CBLOF
 from pyod.models.loda import LODA
 from pyod.models.mcd import MCD
 from pyod.models.mo_gaal import MO_GAAL
+from pyod.models.so_gaal import SO_GAAL
+import datetime
 import pickle
 
 
@@ -48,9 +50,10 @@ CBLOF_clf = CBLOF(contamination=0.05)
 LODA_clf = LODA(contamination=0.05)
 MCD_clf = MCD(contamination=0.05)
 MO_GAAL_clf = MO_GAAL(contamination=0.05, stop_epochs=2)
+SO_GAAL_clf = SO_GAAL(contamination=0.05)
 
-S_models = []
-K_models = []
+S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF"]
+K_models = ["AutoEncoder", "SO_GAAL", "VAE"]
 
 def get_train_data():
     """
@@ -91,7 +94,14 @@ def pyod_train(clf, name):
     x_train, df_train = get_train_data()
 
     print("————————————{} training————————————".format(name))
+    time = datetime.datetime.now().strftime('%Y-%m-%d')
+    print("time:{}".format(time))
+
     clf.fit(x_train)
+
+    print("———————{} finished training————————".format(name))
+    time = datetime.datetime.now().strftime('%Y-%m-%d')
+    print("time:{}".format(time))
 
     if name in S_models:
         with open('M:\mh_data\model\{}\{}.pkl'.format(name, name), 'wb') as f:
@@ -100,6 +110,7 @@ def pyod_train(clf, name):
         clf.save("M:\mh_data\model\{}\{}".format(name, name))
     else:
         return clf
+
 
 
 def pyod_predict(clf, name):
@@ -116,7 +127,7 @@ def pyod_predict(clf, name):
         with open('M:\mh_data\model\{}\{}.pkl'.format(name, name), 'rb') as f:
             clf = pickle.load(f)
     elif name in K_models:
-        clf.read("M:\mh_data\model\{}\{}".format(name, name))
+        clf.read("M:\mh_data\model\{}\{}".format(name, name), x_train.shape[0], x_train.shape[1])
     else:
         clf = pyod_train(clf, name)
 
@@ -148,10 +159,12 @@ def pyod_predict(clf, name):
     # print("\nTen most suspicious ITEMs in test set:")
     # print(top10)
 
+    ####################
     df_test = df_test.sort_values(by='score', ascending=False)
     top10 = df_test[['src_IP', 'time', 'score']][:10]
     print("\nTen most suspicious ITEMs in test set:")
     print(top10)
+    ####################
 
 
     sus_test = df_test[df_test.label == 1]
@@ -166,6 +179,7 @@ def pyod_predict(clf, name):
         biggest_score.append(max(score_list))
     ip_pv = cal_IP_pValue(train_mal, biggest_score)
     a.insert(1, 'p_value', ip_pv)
+    ################
 
     print("\nTen most suspicious IPs:")
     print(a)
@@ -191,7 +205,7 @@ def cal_pValue(train_mal, train_ben ,test_label, test_scores):
     """
     :param train: 训练集样本异常分数
     :param sample_score: 测试集样本异常分数
-    :return: 测试机样本p_value
+    :return: 测试集样本p_value
     """
     pv_list = list()
     for i in range(len(test_label)):
@@ -230,5 +244,5 @@ def cal_IP_pValue(sus_train, biggest_score):
 
 
 if __name__ == "__main__":
-    # pyod_train(AutoEncoder_clf, "AutoEncoder")
-    pyod_predict(PCA_clf, "PCA")
+    # pyod_train(ABOD_clf, "ABOD")
+    pyod_predict(LOF_clf, "LOF")
