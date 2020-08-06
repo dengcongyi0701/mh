@@ -49,7 +49,7 @@ HBOS_clf = HBOS(contamination=0.05)
 CBLOF_clf = CBLOF(contamination=0.05)
 LODA_clf = LODA(contamination=0.05)
 MCD_clf = MCD(contamination=0.05)
-MO_GAAL_clf = MO_GAAL(contamination=0.05, stop_epochs=2)
+MO_GAAL_clf = MO_GAAL(k=3, stop_epochs=2, contamination=0.05)
 SO_GAAL_clf = SO_GAAL(contamination=0.05)
 
 S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF"]
