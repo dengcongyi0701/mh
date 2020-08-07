@@ -10,6 +10,7 @@ Description:
 
 import socket
 import struct
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import normalize
 from sklearn import decomposition
@@ -27,6 +28,7 @@ from pyod.models.loda import LODA
 from pyod.models.mcd import MCD
 from pyod.models.mo_gaal import MO_GAAL
 from pyod.models.so_gaal import SO_GAAL
+
 import datetime
 import pickle
 
@@ -51,8 +53,9 @@ LODA_clf = LODA(contamination=0.05)
 MCD_clf = MCD(contamination=0.05)
 MO_GAAL_clf = MO_GAAL(k=3, stop_epochs=2, contamination=0.05)
 SO_GAAL_clf = SO_GAAL(contamination=0.05)
+KNN_MAH_clf = None
 
-S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF"]
+S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF", "FeatureBagging", "ABOD"]
 K_models = ["AutoEncoder", "SO_GAAL", "VAE"]
 
 def get_train_data():
@@ -93,14 +96,18 @@ def pyod_train(clf, name):
     """
     x_train, df_train = get_train_data()
 
+    if name == "KNN_MAH":
+        x_train_cov = np.cov(x_train, rowvar=False)
+        clf = KNN(metric='mahalanobis', metric_params={'V': x_train_cov})
+
     print("————————————{} training————————————".format(name))
-    time = datetime.datetime.now().strftime('%Y-%m-%d')
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("time:{}".format(time))
 
     clf.fit(x_train)
 
     print("———————{} finished training————————".format(name))
-    time = datetime.datetime.now().strftime('%Y-%m-%d')
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print("time:{}".format(time))
 
     if name in S_models:
@@ -142,30 +149,43 @@ def pyod_predict(clf, name):
     print(train_top10)
 
     print("———————————{} predicting———————————".format(name))
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print("time:{}".format(time))
+
     y_test_pred = clf.predict(x_test)
     y_test_scores = clf.decision_function(x_test)
+
+    print("——————{} finished predicting———————".format(name))
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print("time:{}".format(time))
+
 
     train_mal = df_train[df_train.label == 1]['score'][:].tolist()
     train_ben = df_train[df_train.label == 0]['score'][:].tolist()
 
     df_test.insert(0, 'label', y_test_pred)
     df_test.insert(0, 'score', y_test_scores)
+    df_test = df_test.sort_values(by='score', ascending=False)
 
-    # # 计算测试样本的p_value，很耗时间
-    # test_pv = cal_pValue(train_mal, train_ben, y_test_pred.tolist(), y_test_scores.tolist())
+    # # # 计算测试样本的p_value，耗时间
+    # test_mal = df_test[df_test.label == 1]['score'][:].tolist()
+    # test_ben = df_test[df_test.label == 0]['score'][:].tolist()
+    # test_pv = cal_pValue(train_mal, train_ben, test_mal, test_ben)
     # df_test.insert(0, 'p_value', test_pv)
-    # df_test = df_test.sort_values(by='score', ascending=False)
     # top10 = df_test[['src_IP', 'time', 'score', 'p_value']][:10]
     # print("\nTen most suspicious ITEMs in test set:")
     # print(top10)
+    # sus_test = df_test[df_test.label == 1]
+    # sus_test = sus_test[['src_IP', 'score']]
+    # a = sus_test.groupby('src_IP').count().sort_values(by='score', ascending=False)[:10]
+    # print("\nTen most suspicious IPs:")
+    # print(a)
 
-    ####################
-    df_test = df_test.sort_values(by='score', ascending=False)
+
+    #######################
     top10 = df_test[['src_IP', 'time', 'score']][:10]
     print("\nTen most suspicious ITEMs in test set:")
     print(top10)
-    ####################
-
 
     sus_test = df_test[df_test.label == 1]
     sus_test = sus_test[['src_IP', 'score']]
@@ -179,13 +199,11 @@ def pyod_predict(clf, name):
         biggest_score.append(max(score_list))
     ip_pv = cal_IP_pValue(train_mal, biggest_score)
     a.insert(1, 'p_value', ip_pv)
-    ################
 
     print("\nTen most suspicious IPs:")
     print(a)
 
     # 数据可视化
-
     # 降维
     pca = decomposition.PCA(n_components=3)
     pca_test = pd.DataFrame(pca.fit_transform(x_test))
@@ -200,29 +218,45 @@ def pyod_predict(clf, name):
     dangerous.to_csv("{}_dangerous.csv".format(name), index=None)
     print("\nthe number of safe points:", safe.shape[0])
     print("the number of dangerous points:", dangerous.shape[0])
+    #####################################
 
-def cal_pValue(train_mal, train_ben ,test_label, test_scores):
+def cal_pValue(train_mal, train_ben ,test_mal, test_ben):
     """
     :param train: 训练集样本异常分数
     :param sample_score: 测试集样本异常分数
     :return: 测试集样本p_value
     """
+    # pv_list = list()
+    # for i in range(len(test_label)):
+    #     s = 0
+    #     if test_label[i] == 1:
+    #         for train_sc in train_mal:
+    #             if train_sc <= test_scores[i]:
+    #                 break
+    #             s += 1
+    #         pv = (len(train_mal)-s)/len(train_mal)
+    #     else:
+    #         for train_sc in train_ben:
+    #             if train_sc < test_scores[i]:
+    #                 break
+    #             s += 1
+    #         pv = s/len(train_ben)
+    #     pv_list.append(pv)
+    # return pv_list
+
     pv_list = list()
-    for i in range(len(test_label)):
-        s = 0
-        if test_label[i] == 1:
-            for train_sc in train_mal:
-                if train_sc <= test_scores[i]:
-                    break
-                s += 1
-            pv = (len(train_mal)-s)/len(train_mal)
-        else:
-            for train_sc in train_ben:
-                if train_sc < test_scores[i]:
-                    break
-                s += 1
-            pv = s/len(train_ben)
-        pv_list.append(pv)
+    len_train_mal = len(train_mal)
+    len_train_ben = len(train_ben)
+    c_train_m = 0
+    for c_test_m in range(len(test_mal)):
+        while c_train_m < len_train_mal and test_mal[c_test_m] < train_mal[c_train_m]:
+            c_train_m += 1
+        pv_list.append((len_train_mal-c_train_m)/len_train_mal)
+    c_train_b = 0
+    for c_test_b in range(len(test_ben)):
+        while c_train_b < len_train_ben and test_ben[c_test_b] <= train_ben[c_train_b]:
+            c_train_b += 1
+        pv_list.append(c_train_b/len_train_ben)
     return pv_list
 
 def cal_IP_pValue(sus_train, biggest_score):
@@ -244,5 +278,5 @@ def cal_IP_pValue(sus_train, biggest_score):
 
 
 if __name__ == "__main__":
-    # pyod_train(ABOD_clf, "ABOD")
-    pyod_predict(LOF_clf, "LOF")
+    pyod_train(ABOD_clf, "ABOD")
+    # pyod_predict(HBOS_clf, "HBOS")
