@@ -41,7 +41,6 @@ test_date = "2020-02-16"
 KNN_clf = KNN(contamination=0.05)
 PCA_clf = PCA(contamination=0.05)
 VAE_clf = VAE(contamination=0.05, epochs=30, encoder_neurons=[9, 4], decoder_neurons=[4, 9])
-# VAE_clf = VAE(contamination=0.05, epochs=50, gamma=0.8, capacity=0.2, encoder_neurons=[9, 4], decoder_neurons=[4, 9])
 LOF_clf = LOF(contamination=0.05)
 IForest_clf = IForest(contamination=0.05)
 AutoEncoder_clf = AutoEncoder(contamination=0.05, epochs=30, hidden_neurons=[9, 4, 4, 9])
@@ -55,7 +54,7 @@ MO_GAAL_clf = MO_GAAL(k=3, stop_epochs=2, contamination=0.05)
 SO_GAAL_clf = SO_GAAL(contamination=0.05)
 KNN_MAH_clf = None
 
-S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF", "FeatureBagging", "ABOD"]
+S_models = ["KNN", "LOF", "PCA", "IForest", "HBOS", "LODA", "MCD", "CBLOF", "FeatureBagging", "ABOD", "KNN_MAH"]
 K_models = ["AutoEncoder", "SO_GAAL", "VAE"]
 
 def get_train_data():
@@ -68,6 +67,7 @@ def get_train_data():
     for day in acc_date:
         date = str(day.date())
         file_add = r"M:\mh_data\info\features\features_{}.csv".format(date)
+        # file_add = r"/home/deng/M/mh_data/info/features/features_{}.csv".format(date)
         if date == begin:
             df = pd.read_csv(file_add, index_col=['src_IP', 'time'])
         else:
@@ -83,6 +83,7 @@ def get_test_data():
                 df 原测试样本
     """
     file_add = r"M:\mh_data\info\features\features_{}.csv".format(test_date)
+    # file_add = r"/home/deng/M/mh_data/info/features/features_{}.csv".format(test_date)
     df = pd.read_csv(file_add, index_col=['src_IP', 'time'])
     x_test = pd.DataFrame(normalize(df.values), index=df.index, columns=df.columns)
     return x_test, df
@@ -101,20 +102,22 @@ def pyod_train(clf, name):
         clf = KNN(metric='mahalanobis', metric_params={'V': x_train_cov})
 
     print("————————————{} training————————————".format(name))
-    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("time:{}".format(time))
+    time0 = datetime.datetime.now()
 
     clf.fit(x_train)
 
     print("———————{} finished training————————".format(name))
-    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("time:{}".format(time))
+    time1 = datetime.datetime.now()
+    total_time = (time1 - time0).seconds / 3600.0
+    print("Total time spent:", total_time)
 
     if name in S_models:
         with open('M:\mh_data\model\{}\{}.pkl'.format(name, name), 'wb') as f:
+        # with open('/home/deng/M/mh_data/model/{}/{}.pkl'.format(name, name), 'wb') as f:
             pickle.dump(clf, f)
     elif name in K_models:
         clf.save("M:\mh_data\model\{}\{}".format(name, name))
+        # clf.save("/home/deng/M/mh_data/model/{}/{}".format(name, name))
     else:
         return clf
 
@@ -132,9 +135,11 @@ def pyod_predict(clf, name):
 
     if name in S_models:
         with open('M:\mh_data\model\{}\{}.pkl'.format(name, name), 'rb') as f:
+        # with open('/home/deng/M/mh_data/model/{}/{}.pkl'.format(name, name), 'rb') as f:
             clf = pickle.load(f)
     elif name in K_models:
         clf.read("M:\mh_data\model\{}\{}".format(name, name), x_train.shape[0], x_train.shape[1])
+        # clf.read("/home/deng/M/mh_data/model/{}/{}".format(name, name), x_train.shape[0], x_train.shape[1])
     else:
         clf = pyod_train(clf, name)
 
@@ -167,21 +172,6 @@ def pyod_predict(clf, name):
     df_test.insert(0, 'score', y_test_scores)
     df_test = df_test.sort_values(by='score', ascending=False)
 
-    # # # 计算测试样本的p_value，耗时间
-    # test_mal = df_test[df_test.label == 1]['score'][:].tolist()
-    # test_ben = df_test[df_test.label == 0]['score'][:].tolist()
-    # test_pv = cal_pValue(train_mal, train_ben, test_mal, test_ben)
-    # df_test.insert(0, 'p_value', test_pv)
-    # top10 = df_test[['src_IP', 'time', 'score', 'p_value']][:10]
-    # print("\nTen most suspicious ITEMs in test set:")
-    # print(top10)
-    # sus_test = df_test[df_test.label == 1]
-    # sus_test = sus_test[['src_IP', 'score']]
-    # a = sus_test.groupby('src_IP').count().sort_values(by='score', ascending=False)[:10]
-    # print("\nTen most suspicious IPs:")
-    # print(a)
-
-
     #######################
     top10 = df_test[['src_IP', 'time', 'score']][:10]
     print("\nTen most suspicious ITEMs in test set:")
@@ -203,21 +193,21 @@ def pyod_predict(clf, name):
     print("\nTen most suspicious IPs:")
     print(a)
 
-    # 数据可视化
-    # 降维
-    pca = decomposition.PCA(n_components=3)
-    pca_test = pd.DataFrame(pca.fit_transform(x_test))
-    pca_test.insert(0, 'label', y_test_pred)
-    pca_test.insert(0, 'IP', df_test.pop('src_IP'))
-
-    # 抽取百分之一的数据
-    pca_sample = pca_test.sample(frac=0.01, axis=0)
-    safe = pca_sample[pca_sample.label == 0]
-    dangerous = pca_sample[pca_sample.label > 0]
-    safe.to_csv("{}_safe.csv".format(name), index=None)
-    dangerous.to_csv("{}_dangerous.csv".format(name), index=None)
-    print("\nthe number of safe points:", safe.shape[0])
-    print("the number of dangerous points:", dangerous.shape[0])
+    # # 数据可视化
+    # # 降维
+    # pca = decomposition.PCA(n_components=3)
+    # pca_test = pd.DataFrame(pca.fit_transform(x_test))
+    # pca_test.insert(0, 'label', y_test_pred)
+    # pca_test.insert(0, 'IP', df_test.pop('src_IP'))
+    #
+    # # 抽取百分之一的数据
+    # pca_sample = pca_test.sample(frac=0.01, axis=0)
+    # safe = pca_sample[pca_sample.label == 0]
+    # dangerous = pca_sample[pca_sample.label > 0]
+    # safe.to_csv("{}_safe.csv".format(name), index=None)
+    # dangerous.to_csv("{}_dangerous.csv".format(name), index=None)
+    # print("\nthe number of safe points:", safe.shape[0])
+    # print("the number of dangerous points:", dangerous.shape[0])
     #####################################
 
 def cal_pValue(train_mal, train_ben ,test_mal, test_ben):
@@ -226,23 +216,6 @@ def cal_pValue(train_mal, train_ben ,test_mal, test_ben):
     :param sample_score: 测试集样本异常分数
     :return: 测试集样本p_value
     """
-    # pv_list = list()
-    # for i in range(len(test_label)):
-    #     s = 0
-    #     if test_label[i] == 1:
-    #         for train_sc in train_mal:
-    #             if train_sc <= test_scores[i]:
-    #                 break
-    #             s += 1
-    #         pv = (len(train_mal)-s)/len(train_mal)
-    #     else:
-    #         for train_sc in train_ben:
-    #             if train_sc < test_scores[i]:
-    #                 break
-    #             s += 1
-    #         pv = s/len(train_ben)
-    #     pv_list.append(pv)
-    # return pv_list
 
     pv_list = list()
     len_train_mal = len(train_mal)
@@ -276,7 +249,79 @@ def cal_IP_pValue(sus_train, biggest_score):
         pv_list.append(pv)
     return pv_list
 
+def multi_model_predict(clf_list):
+    x_train, df_train = get_train_data()
+    x_test, df_test = get_test_data()
+    df_test = df_test.drop(['num_of_dstIP', 'ratio_acc_dstIP', 'ratio_acc_dstPORT', 'std_dstPORT', 'mean_resp_flow',
+           'std_resp_flow', 'zero_resp_flow', 'mean_req_flow', 'std_req_flow'], axis=1)
+    time0 = datetime.datetime.now()
+    for clf_name in clf_list:
+        clf = globals()[clf_name+"_clf"]
+        if clf_name in S_models:
+            clf = pickle.load(open('M:\mh_data\model\{}\{}.pkl'.format(clf_name, clf_name), 'rb'))
+            # clf = pickle.load(open('/home/deng/M/mh_data/model/{}/{}.pkl'.format(clf_name, clf_name), 'rb'))
+        elif clf_name in K_models:
+            clf.read("M:\mh_data\model\{}\{}".format(clf_name, clf_name), x_train.shape[0], x_train.shape[1])
+            # clf.read("/home/deng/M/mh_data/model/{}/{}".format(name, name), x_train.shape[0], x_train.shape[1])
+
+        y_train_pred = clf.labels_
+        y_train_scores = clf.decision_scores_
+        df_train = df_train[['num_of_dstIP']]
+        df_train.insert(0, 'label', y_train_pred)
+        df_train.insert(0, 'score', y_train_scores)
+        df_train = df_train.sort_values(by='score', ascending=False)
+        train_mal = df_train[df_train.label == 1]['score'][:].tolist()
+        train_ben = df_train[df_train.label == 0]['score'][:].tolist()
+
+        print("———————————{} predicting———————————".format(clf_name))
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print("time:{}".format(time))
+
+        y_test_pred = clf.predict(x_test)
+        y_test_scores = clf.decision_function(x_test)
+
+        print("——————{} finished predicting———————".format(clf_name))
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print("time:{}".format(time))
+
+        temp_test = pd.DataFrame([y_test_pred, y_test_scores])
+        temp_test = pd.DataFrame(temp_test.values.T, index=df_test.index, columns=['label', 'score'])
+        temp_test = temp_test.sort_values(by='score', ascending=False)
+
+        # # 计算测试样本的p_value
+        test_mal = temp_test[temp_test.label == 1]['score'][:].tolist()
+        test_ben = temp_test[temp_test.label == 0]['score'][:].tolist()
+        test_pv = cal_pValue(train_mal, train_ben, test_mal, test_ben)
+        temp_test.insert(0, 'p_value', test_pv)
+        temp_test = temp_test[['p_value', 'label', 'score']]
+        temp_test.columns = ['{}_p_value'.format(clf_name), '{}_label'.format(clf_name), '{}_score'.format(clf_name)]
+
+        df_test = df_test.join(temp_test, how='outer')
+    final_label = []
+    for ind in df_test.index:
+        lab_dic = {}
+        for clf_name in clf_list:
+            lab_dic[df_test["{}_p_value".format(clf_name)][ind]] = df_test["{}_label".format(clf_name)][ind]
+        max_key = max(list(lab_dic.keys()))
+        final_label.append(lab_dic[max_key])
+    df_test.insert(0, 'final_label', final_label)
+    train_label = df_test[['final_label']]
+    sus_test = train_label[train_label.final_label == 1]
+    sus_test = sus_test.reset_index()
+    sus_test = sus_test.drop(['time'], axis=1)
+    a = sus_test.groupby('src_IP').count().sort_values(by='final_label', ascending=False)[:10]
+    print(a)
+
+    time1 = datetime.datetime.now()
+    total_time = (time1-time0).seconds/3600.0
+    print("Total time spent:", total_time)
+
 
 if __name__ == "__main__":
-    pyod_train(ABOD_clf, "ABOD")
-    # pyod_predict(HBOS_clf, "HBOS")
+    # pyod_train(ABOD_clf, "ABOD")
+    # pyod_predict(ABOD_clf, "ABOD")
+
+    clf_l = ["KNN", "PCA", "VAE", "LOF", "IForest", "AutoEncoder", "HBOS", "CBLOF", "LODA", "MCD"]
+    multi_model_predict(clf_l)
+
+
